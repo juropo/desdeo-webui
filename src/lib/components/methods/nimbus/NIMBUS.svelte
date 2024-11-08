@@ -18,6 +18,7 @@ A user interface for the NIMBUS method.
   import Visualizations from "$lib/components/util/undecorated/Visualizations.svelte";
   import Card from "$lib/components/main/Card.svelte";
   import GeneralError from "$lib/components/util/undecorated/GeneralError.svelte";
+  import BarChart from "$lib/components/visual/general/BarChart.svelte";
   import Table from "$lib/components/util/undecorated/Table.svelte";
   import ParallelCoordinatePlotBase from "$lib/components/visual/visualization/props-linking/ParallelCoordinatePlot.svelte";
   import { transform_bounds } from "$lib/components/util/util";
@@ -965,6 +966,23 @@ A user interface for the NIMBUS method.
                 <GeneralError />
               {/if}
             </div>
+          </div>
+        </Card>
+      </div>
+      <div slot="CO2">
+        <Card>
+          <svelte:fragment slot="header">Heissulivei</svelte:fragment>
+          <BarChart
+            categories={["Sidottu\nhiilidioksidi\n/ (v·t)"]}
+            data={[[100], [150], [55]]}
+            xAxisMax={666}
+          />
+          <div class="flex gap-4">
+            <button
+              class="btn variant-filled inline"
+              on:click={handle_iterate}
+              disabled={!is_classification_valid}>Päivitä</button
+            >
           </div>
         </Card>
       </div>

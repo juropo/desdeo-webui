@@ -10,7 +10,7 @@ categories, and x-axis maximum.
 -->
 
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { afterUpdate, onMount } from "svelte";
   import * as echarts from "echarts";
 
   import { colorPalette } from "$lib/components/visual/constants";
@@ -39,6 +39,8 @@ categories, and x-axis maximum.
     "Category D",
   ];
 
+  export let partNames: string[] = ["Part 1", "Part 2", "Part 3", "Part 4"];
+
   /**
    * The maximum value for the x-axis. If data exceeds this value, the axis
    * expands to fit.
@@ -53,50 +55,56 @@ categories, and x-axis maximum.
   let chart: echarts.ECharts | undefined;
   let chartContainer: HTMLDivElement;
 
-  // Define your stacked data and options
-  const options: echarts.EChartOption = {
-    tooltip: {
-      trigger: "axis",
-      axisPointer: { type: "shadow" },
-    },
-    xAxis: {
-      type: "value",
-      max: (value) => Math.max(xAxisMax, value.max),
-    },
-    yAxis: {
-      type: "category",
-      data: categories,
-      axisLabel: {
-        interval: 0, // Ensure labels aren't skipping any category
-        fontSize: 16,
-        align: "left",
-        padding: [0, 100, 0, 0],
-        margin: 100,
+  // Function to set chart options
+  const setOptions = () => {
+    if (!chart) return;
+
+    const options: echarts.EChartOption = {
+      tooltip: {
+        trigger: "axis",
+        axisPointer: { type: "shadow" },
       },
-      axisLine: {
-        show: false,
+      xAxis: {
+        type: "value",
+        max: (value) => Math.max(xAxisMax, value.max),
       },
-    },
-    series: data.map((seriesData, index) => ({
-      name: `Part ${index + 1}`,
-      type: "bar",
-      stack: "total",
-      data: seriesData,
-      itemStyle: { color: colorPalette[index] }, // Use a color array to pick different colors
-      barCategoryGap: "0%",
-    })),
-    grid: {
-      top: 20, // Increase top padding
-      bottom: 20, // Increase bottom padding
-      left: 100,
-      right: 20,
-    },
+      yAxis: {
+        type: "category",
+        data: categories,
+        axisLabel: {
+          interval: 0, // Ensure labels aren't skipping any category
+          fontSize: 16,
+          align: "left",
+          padding: [0, 100, 0, 0],
+          margin: 100,
+        },
+        axisLine: {
+          show: false,
+        },
+      },
+      series: data.map((seriesData, index) => ({
+        name: partNames[index],
+        type: "bar",
+        stack: "total",
+        data: seriesData,
+        itemStyle: { color: colorPalette[index] }, // Use a color array to pick different colors
+        barCategoryGap: "0%",
+      })),
+      grid: {
+        top: 20, // Increase top padding
+        bottom: 20, // Increase bottom padding
+        left: 100,
+        right: 20,
+      },
+    };
+    chart.setOption(options);
   };
+  // Define your stacked data and options
 
   // Initialize the chart
   onMount(() => {
     chart = echarts.init(chartContainer);
-    chart.setOption(options);
+    setOptions();
 
     // Optional: Handle chart resizing
     window.addEventListener("resize", () => {
@@ -107,6 +115,11 @@ categories, and x-axis maximum.
       chart?.dispose();
       window.removeEventListener("resize", () => chart?.resize());
     };
+  });
+
+  // Update chart when data or xAxisMax changes
+  afterUpdate(() => {
+    setOptions(); // Update chart options if props change
   });
 </script>
 

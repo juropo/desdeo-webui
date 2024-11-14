@@ -126,6 +126,10 @@ A user interface for the NIMBUS method.
   let geoJSON: object | undefined = undefined;
   let mapName: string | undefined = undefined;
   let mapDescription: string | undefined = undefined;
+  let compensation = 0.0;
+
+  let co2_data = [[100], [150]];
+  let co2_max = 666;
 
   let finalChoiceState = false;
 
@@ -293,6 +297,7 @@ A user interface for the NIMBUS method.
   $: if (reference_solution !== undefined && state === State.ClassifySelected) {
     // we don't need maps for the base version of NIMBUS, but in Utopia we do
     get_maps(reference_solution);
+    co2_data[1][0] = Math.round(reference_solution[3]);
   }
 
   /** The number of decimals to show for numeric values. */
@@ -400,6 +405,8 @@ A user interface for the NIMBUS method.
       });
       console.error(err);
     }
+
+    handle_share_solution();
   }
 
   //
@@ -520,6 +527,7 @@ A user interface for the NIMBUS method.
     geoJSON = data.map_json;
     mapName = data.map_name;
     mapDescription = data.description;
+    compensation = Math.round(data.compensation * 100) / 100;
     //console.log(mapOptions);
     //console.log(geoJSON);
     //console.log(mapName);
@@ -666,6 +674,42 @@ A user interface for the NIMBUS method.
       toastStore.trigger({
         // prettier-ignore
         message: "Oops! Something went wrong.",
+        background: "variant-filled-error",
+        timeout: 5000,
+      });
+      console.error(err);
+    }
+  }
+
+  async function handle_share_solution() {
+    try {
+      let endpoint = API_URL + "/nimbus/share_solutions";
+
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + AUTH_TOKEN,
+        },
+        body: JSON.stringify({
+          problem_id: problem_id,
+          solution: reference_solution,
+        }),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        co2_data = [
+          [Math.round(data.others_contribution)],
+          [Math.round(data.own_contribution)],
+        ];
+        co2_max = Math.round(data.max_contribution / 2);
+      } else {
+        throw new Error("Failed to share solution.");
+      }
+    } catch (err) {
+      toastStore.trigger({
+        // prettier-ignore
+        message: "Oops! Something went wrong with solution sharing.",
         background: "variant-filled-error",
         timeout: 5000,
       });
@@ -942,7 +986,9 @@ A user interface for the NIMBUS method.
             <p>
               Nettonykyarvon ja hakkuiden tuoton laskennassa on käytetty 3%
               diskonntauskerrointa. Puuston tilavuus kuvaa tilannetta
-              suunnittelujakson lopussa.
+              suunnittelujakson lopussa. {#if compensation}Sidotusta hiilestä
+                maksettu korvaus on lisätty hakkuiden tuottoihin ja
+                nettonykyarvoon.{/if}
             </p>
             <div class="overflow-x-auto">
               {#if problemInfo !== undefined && solutions_to_visualize !== undefined}
@@ -971,17 +1017,19 @@ A user interface for the NIMBUS method.
       </div>
       <div slot="CO2">
         <Card>
-          <svelte:fragment slot="header">Heissulivei</svelte:fragment>
+          <svelte:fragment slot="header"
+            >Ryhmän yhteensä sitoma hiilidioksidi</svelte:fragment
+          >
           <BarChart
             categories={["Sidottu\nhiilidioksidi\n/ (v·t)"]}
-            data={[[100], [150], [55]]}
-            xAxisMax={666}
+            partNames={["Muiden sitoma CO2", "Oma sidottu CO2"]}
+            data={co2_data}
+            xAxisMax={co2_max}
           />
           <div class="flex gap-4">
             <button
               class="btn variant-filled inline"
-              on:click={handle_iterate}
-              disabled={!is_classification_valid}>Päivitä</button
+              on:click={handle_share_solution}>Jaa valittu ratkaisu</button
             >
           </div>
         </Card>

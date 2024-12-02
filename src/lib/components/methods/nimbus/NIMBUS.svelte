@@ -3,6 +3,7 @@
 A user interface for the NIMBUS method.
 -->
 <script lang="ts">
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   //
   // TODO: Fix the way maximization/minimization is presented in the NIMBUS visualization
   //
@@ -1015,6 +1016,7 @@ A user interface for the NIMBUS method.
           </div>
         </Card>
       </div>
+      <!--
       <div slot="CO2">
         <Card>
           <svelte:fragment slot="header"
@@ -1034,6 +1036,7 @@ A user interface for the NIMBUS method.
           </div>
         </Card>
       </div>
+      -->
       <div slot="Map">
         <Card>
           <svelte:fragment slot="header"

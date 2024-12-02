@@ -14,7 +14,7 @@
     <div class="flex flex-col gap-10">
       <slot name="solutionSetChoice" />
       <slot name="visualizations" />
-      <slot name="CO2" />
+      <!-- <slot name="CO2" /> -->
       <slot name="Map" />
     </div>
   </div>

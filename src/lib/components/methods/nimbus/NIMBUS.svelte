@@ -1016,25 +1016,6 @@ A user interface for the NIMBUS method.
           </div>
         </Card>
       </div>
-      <div slot="CO2">
-        <Card>
-          <svelte:fragment slot="header"
-            >Ryhmän yhteensä sitoma hiilidioksidi</svelte:fragment
-          >
-          <BarChart
-            categories={["Sidottu\nhiilidioksidi\n/ (v·t)"]}
-            partNames={["Muiden sitoma CO2", "Oma sidottu CO2"]}
-            data={co2_data}
-            xAxisMax={co2_max}
-          />
-          <div class="flex gap-4">
-            <button
-              class="btn variant-filled inline"
-              on:click={handle_share_solution}>Jaa valittu ratkaisu</button
-            >
-          </div>
-        </Card>
-      </div>
       <div slot="Map">
         <Card>
           <svelte:fragment slot="header"

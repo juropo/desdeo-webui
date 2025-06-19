@@ -3,7 +3,7 @@
   // TODO: The registration form could be merged with the login form.
   //
 
-  import { register_account, login_as_guest } from "$lib/api";
+  import { register_account, loginAsGuest } from "$lib/api";
   import { goto } from "$app/navigation";
   import { toastStore } from "@skeletonlabs/skeleton";
 
@@ -40,7 +40,7 @@
   // moved to somewhere, or the component could be merged.
   //
   function handleGuestLogin() {
-    login_as_guest()
+    loginAsGuest()
       .then(() => {
         goto("/");
       })

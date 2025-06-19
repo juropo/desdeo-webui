@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import { loginOAuth2, login_as_guest } from "$lib/api.js";
+  import { loginOAuth2, loginAsGuest } from "$lib/api.js";
   import { toastStore } from "@skeletonlabs/skeleton";
 
   export let username = "";
@@ -32,9 +32,9 @@
 
   // TODO: This function is repeated in the registration form component
   function handleGuestLogin() {
-    login_as_guest()
+    loginAsGuest()
       .then(() => {
-        goto("/");
+        goto("/solve");
       })
       .catch(() => {
         toastStore.trigger({

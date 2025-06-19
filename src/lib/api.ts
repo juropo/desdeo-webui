@@ -262,22 +262,37 @@ export async function loginOAuth2(
 /**
  * Attempts to log in as a guest user.
  *
- * @returns The message returned by the backend server. The tokens are not
- *   included.
+ * @returns The message returned by the backend server. The tokens are included.
  *
  *   TODO: Validate response data.
  */
-export function login_as_guest(): Promise<{ message: string }> {
-  return without_token()
-    .get("/guest/create")
-    .then((response) => {
-      set_access_token(response.data.access_token);
-      set_refresh_token(response.data.refresh_token);
-      set_username(undefined);
-      return {
-        message: <string>response.data.message,
-      };
+export async function loginAsGuest(): Promise<{ message: string }> {
+  try {
+    const response = await fetch(baseURL + "/guest_login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
     });
+    if (response.ok) {
+      const data: OAuth2Response = await response.json();
+      set_access_token(data.access_token);
+      set_username(undefined);
+      get_guest_problem();
+      return {
+        message: "Logged in successfully",
+      };
+    } else {
+      return {
+        message: "Failed to log in",
+      };
+    }
+  } catch (e) {
+    console.log(e);
+    return {
+      message: "Failed to log in",
+    };
+  }
 }
 
 /**
@@ -432,6 +447,14 @@ export async function get_problem(problem_id: number): Promise<Problem> {
   });
   const problem = BackendProblemS.parse(response.data);
   return transform_problem(problem);
+}
+
+async function get_guest_problem() {
+  const response = await with_access_token().post("/problem/default/guest");
+  const problem = BackendProblemS.parse(response.data);
+  methodHeaderText.set("NIMBUS");
+  selectedProblem.set(problem.problem_id);
+  selectedMethod.set("nimbus");
 }
 
 //

@@ -25,6 +25,7 @@ length.
   export let disabled = false;
   export let tab = 0;
   export let grid_mode = false;
+  export let Finnish = false;
 </script>
 
 {#if grid_mode}
@@ -52,5 +53,6 @@ length.
     bind:highlighted
     bind:tab
     {disabled}
+    {Finnish}
   />
 {/if}

@@ -450,7 +450,7 @@ export async function get_problem(problem_id: number): Promise<Problem> {
 }
 
 async function get_guest_problem() {
-  const response = await with_access_token().post("/problem/default/guest");
+  const response = await with_access_token().get("/problem/default/guest");
   const problem = BackendProblemS.parse(response.data);
   methodHeaderText.set("NIMBUS");
   selectedProblem.set(problem.problem_id);

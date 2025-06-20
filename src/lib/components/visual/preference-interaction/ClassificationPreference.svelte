@@ -40,6 +40,8 @@
    */
   export let preference: (number | undefined)[];
 
+  export let Finnish = false;
+
   $: preference = [...preference];
 
   /** The decimal precision to use for rounding values. */
@@ -62,6 +64,7 @@
       {decimalPrecision}
       lowerIsBetter={!is_maximized[j]}
       arrowMode={true}
+      {Finnish}
     />
   {/each}
 </div>

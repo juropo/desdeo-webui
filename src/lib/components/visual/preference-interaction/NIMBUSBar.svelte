@@ -5,14 +5,8 @@
 <script lang="ts">
   import Input from "$lib/components/visual/preference-interaction/BasicInput.svelte";
   import SingleHorizontalBar from "$lib/components/visual/preference-interaction/HorizontalBarAlt.svelte";
+  import { roundToDecimal } from "$lib/components/visual/helperFunctions";
 
-  enum classification {
-    ChangeFreely = "Saa muuttua vapaasti",
-    WorsenUntil = "Saa huonontua tasoon",
-    KeepContant = "Pidä vakiona tasossa",
-    ImproveUntil = "Paranna kunnes tasossa",
-    ImproveFreely = "Saa parantua vapaasti",
-  }
   /** The lower bound of the chart. */
   export let lowerBound: number;
 
@@ -49,7 +43,9 @@
   /** The aspect ratio of the chart container div element. */
   export let aspect: string | undefined = undefined;
 
-  let classificationValue: classification = classification.ChangeFreely;
+  export let Finnish = false;
+
+  let classificationLabel = "Change freely";
 
   const precision = 1;
 
@@ -57,23 +53,47 @@
     // Todo: This only works if lowerIsBetter is false, I think.
 
     if (selectedValue === undefined || solutionValue === undefined) {
-      classificationValue = classification.ChangeFreely;
+      if (Finnish) {
+        classificationLabel = "Saa muuttua vapaasti";
+      } else {
+        classificationLabel = "Change freely";
+      }
     } else if (
       Math.abs(selectedValue - lowerBound) < precision ||
       selectedValue < lowerBound
     ) {
-      classificationValue = classification.ChangeFreely;
+      if (Finnish) {
+        classificationLabel = "Saa muuttua vapaasti";
+      } else {
+        classificationLabel = "Change freely";
+      }
     } else if (
       Math.abs(selectedValue - higherBound) < precision ||
       selectedValue > higherBound
     ) {
-      classificationValue = classification.ImproveFreely;
+      if (Finnish) {
+        classificationLabel = "Saa parantua vapaasti";
+      } else {
+        classificationLabel = "Improve freely";
+      }
     } else if (Math.abs(selectedValue - solutionValue) < precision) {
-      classificationValue = classification.KeepContant;
+      if (Finnish) {
+        classificationLabel = "Pidä vakiona tasossa";
+      } else {
+        classificationLabel = "Keep constant at";
+      }
     } else if (selectedValue < solutionValue) {
-      classificationValue = classification.WorsenUntil;
+      if (Finnish) {
+        classificationLabel = "Saa huonontua tasoon";
+      } else {
+        classificationLabel = "Worsen until";
+      }
     } else if (selectedValue > solutionValue) {
-      classificationValue = classification.ImproveUntil;
+      if (Finnish) {
+        classificationLabel = "Paranna kunnes tasossa";
+      } else {
+        classificationLabel = "Improve until";
+      }
     }
   }
   //   export let barColor = "#a6b1e1";
@@ -106,7 +126,7 @@
 
     <Input
       bind:value={selectedValue}
-      labelName={classificationValue}
+      labelName={classificationLabel}
       onChange={moveToRange}
     />
     <!-- <div>
@@ -116,9 +136,14 @@
   <div class="secondPart">
     <div id="prev">
       <!-- TODO: Implement this so that when no prev values is given, nothing shows up. But implementation should not make a mess. Maybe reserve a blank space (how)? -->
-      <span style="color:gray; font-size: small; ">Edellinen tavoitetaso</span>
+      <span style="color:gray; font-size: small; "
+        >{#if Finnish}Edellinen tavoitetaso
+        {:else}Previous preference{/if}</span
+      >
       {#if previousValue}
-        <span id="prevValue">{previousValue}</span>
+        <span id="prevValue"
+          >{roundToDecimal(previousValue, decimalPrecision)}</span
+        >
       {:else}
         <span id="prevValue">--</span>
       {/if}

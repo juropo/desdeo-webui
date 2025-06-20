@@ -24,6 +24,7 @@ length.
   export let highlighted: number | undefined = undefined;
   export let tab = 0;
   export let disabled = false;
+  export let Finnish = false;
 
   $: bounds = transform_bounds(lower_bounds, upper_bounds);
 
@@ -34,9 +35,18 @@ length.
 </script>
 
 <TabGroup>
-  <Tab bind:group={tab} name="tab1" value={0}>Arvopolku</Tab>
-  <Tab bind:group={tab} name="tab2" value={1}>Pylväsdiagrammi</Tab>
-  <Tab bind:group={tab} name="tab3" value={2}>Kaikki</Tab>
+  <Tab bind:group={tab} name="tab1" value={0}
+    >{#if Finnish}Arvopolku
+    {:else}Parallel Coordinate Plot{/if}</Tab
+  >
+  <Tab bind:group={tab} name="tab2" value={1}
+    >{#if Finnish}Pylväsdiagrammi
+    {:else}Bar Chart{/if}</Tab
+  >
+  <Tab bind:group={tab} name="tab3" value={2}
+    >{#if Finnish}Kaikki
+    {:else}All{/if}</Tab
+  >
 
   <svelte:fragment slot="panel">
     {#if tab === 0}

@@ -128,6 +128,7 @@ A user interface for the NIMBUS method.
   let mapName: string | undefined = undefined;
   let mapDescription: string | undefined = undefined;
   let compensation = 0.0;
+  let Finnish = true;
 
   let co2_data = [[100], [150]];
   let co2_max = 666;
@@ -407,7 +408,7 @@ A user interface for the NIMBUS method.
       console.error(err);
     }
 
-    handle_share_solution();
+    //handle_share_solution();
   }
 
   //
@@ -529,6 +530,7 @@ A user interface for the NIMBUS method.
     mapName = data.map_name;
     mapDescription = data.description;
     compensation = Math.round(data.compensation * 100) / 100;
+    Finnish = data.language === "fi";
     //console.log(mapOptions);
     //console.log(geoJSON);
     //console.log(mapName);
@@ -682,7 +684,7 @@ A user interface for the NIMBUS method.
     }
   }
 
-  async function handle_share_solution() {
+  /*async function handle_share_solution() {
     try {
       let endpoint = API_URL + "/nimbus/share_solutions";
 
@@ -716,7 +718,7 @@ A user interface for the NIMBUS method.
       });
       console.error(err);
     }
-  }
+  }*/
 </script>
 
 <div class="flex flex-col gap-10">
@@ -733,33 +735,45 @@ A user interface for the NIMBUS method.
         {#if problemInfo !== undefined && reference_solution !== undefined}
           <Card>
             <svelte:fragment slot="header"
-              >Päätöksentekijän tavoitteet</svelte:fragment
+              >{#if Finnish}Päätöksentekijän tavoitteet
+              {:else}Preference information{/if}</svelte:fragment
             >
             <RadioGroup>
               <RadioItem
                 bind:group={state}
                 name="justify"
-                value={State.ClassifySelected}>Aseta tavoitteet</RadioItem
+                value={State.ClassifySelected}
+                >{#if Finnish}Aseta tavoitteet
+                {:else}Provide classification{/if}</RadioItem
               >
               <RadioItem
                 bind:group={state}
                 name="justify"
                 value={State.SaveSolutionsSelected}
-                >Tallenna ratkaisuita</RadioItem
+                >{#if Finnish}Tallenna ratkaisuita
+                {:else}Save best candidate solutions{/if}</RadioItem
               >
             </RadioGroup>
             {#if state === State.ClassifySelected}
               <div>
-                Aseta tavoitteesi joko siirtäen palkkeja tai syöttämällä
-                lukuarvot. Sinun on annettava tavoitetaso jokaiselle
-                tavoitteelle. Menetelmä tuottaa ainoastaan ratkaisuita, joita ei
-                voi parantaa tinkimättä muista tavoitteista, joten jonkun
-                tavoitetason on laskettava, jos haluat nostaa jotain toista.
-                Voit myös valita näytettävien ratkaisuiden lukumäärän. Klikkaa
-                sitten "Etsi uusia ratkaisuita" -nappia.
+                {#if Finnish}Aseta tavoitteesi joko siirtäen palkkeja tai
+                  syöttämällä lukuarvot. Sinun on annettava tavoitetaso
+                  jokaiselle tavoitteelle. Menetelmä tuottaa ainoastaan
+                  ratkaisuita, joita ei voi parantaa tinkimättä muista
+                  tavoitteista, joten jonkun tavoitetason on laskettava, jos
+                  haluat nostaa jotain toista. Voit myös valita näytettävien
+                  ratkaisuiden lukumäärän. Klikkaa sitten "Etsi uusia
+                  ratkaisuita" -nappia.
+                {:else}Provide your preferences by classifying the objectives by
+                  either clicking on the bars or using the input boxes. You must
+                  give a preference for each objective. You must improve and
+                  impair at least one objective. You can choose the maximum
+                  number of new solutions to generate.{/if}
               </div>
               <Input
-                labelName="Kuinka monta ratkaisua NIMBUS tuottaa?"
+                labelName={Finnish
+                  ? "Kuinka monta ratkaisua NIMBUS tuottaa?"
+                  : "Maximum number of solutions to generate using NIMBUS:"}
                 bind:value={numSolutions}
                 onChange={() => {
                   if (numSolutions < MIN_NUM_SOLUTIONS) {
@@ -779,6 +793,7 @@ A user interface for the NIMBUS method.
                 previousValue={problemInfo.previous_preference}
                 bind:preference
                 decimalPrecision={0}
+                {Finnish}
               />
             {:else if state === State.IntermediateSelected}
               <div>
@@ -816,8 +831,10 @@ A user interface for the NIMBUS method.
               {/if}
             {:else if state === State.SaveSolutionsSelected}
               <div>
-                Valitse kaikki ratkaisut, jotka haluat tallentaa, ja klikkaa
-                Tallenna.
+                {#if Finnish}Valitse kaikki ratkaisut, jotka haluat tallentaa,
+                  ja klikkaa Tallenna.
+                {:else}Select any number of solutions and then click "Save" to
+                  save solutions of interest to the database.{/if}
               </div>
               {#if solutions_to_visualize !== undefined}
                 <ParallelCoordinatePlotBase
@@ -843,18 +860,21 @@ A user interface for the NIMBUS method.
                   class="btn variant-filled inline"
                   on:click={handle_iterate}
                   disabled={!is_classification_valid}
-                  >Etsi uusia ratkaisuita</button
+                  >{#if Finnish}Etsi uusia ratkaisuita
+                  {:else}Iterate{/if}</button
                 >
                 <button
                   class="btn variant-filled inline"
                   on:click={press_final_button}
                   disabled={!(state === State.ClassifySelected)}
-                  >Päätä tarkastelu valittuun ratkaisuun</button
+                  >{#if Finnish}Päätä tarkastelu valittuun ratkaisuun
+                  {:else}Finish with chosen solution{/if}</button
                 >
               </div>
               {#if !is_classification_valid}
                 <div class="text-error-500">
-                  Aseta tavoitetasot ohjeiden mukaan.
+                  {#if Finnish}Aseta tavoitetasot ohjeiden mukaan.
+                  {:else}Please give a valid classification for the objectives.{/if}
                 </div>
               {/if}
             {:else if state === State.IntermediateSelected}
@@ -873,11 +893,16 @@ A user interface for the NIMBUS method.
                 <button
                   class="btn variant-filled"
                   on:click={handle_save_solutions}
-                  disabled={!is_save_solutions_valid}>Tallenna</button
+                  disabled={!is_save_solutions_valid}
+                  >{#if Finnish}Tallenna
+                  {:else}Save{/if}</button
                 >
               </div>
               {#if !is_save_solutions_valid}
-                <div class="text-error-500">Valitse ainakin yksi ratkaisu.</div>
+                <div class="text-error-500">
+                  {#if Finnish}Valitse ainakin yksi ratkaisu.
+                  {:else}Please select at least one solution.{/if}
+                </div>
               {/if}
             {:else}
               <GeneralError />
@@ -888,43 +913,58 @@ A user interface for the NIMBUS method.
       <div slot="solutionSetChoice">
         <Card>
           <svelte:fragment slot="header"
-            >Valitse näytettävät ratkaisut</svelte:fragment
+            >{#if Finnish}Valitse näytettävät ratkaisut
+            {:else}Choose which solution set to visualize{/if}</svelte:fragment
           >
           <RadioGroup>
             <RadioItem
               bind:group={visualizationChoiceState}
               name="justify"
               value={VisualizationChoiceState.CurrentSolutions}
-              >Tämänhetkiset ratkaisut</RadioItem
+              >{#if Finnish}Tämänhetkiset ratkaisut
+              {:else}Current solutions{/if}</RadioItem
             >
             <RadioItem
               bind:group={visualizationChoiceState}
               name="justify"
               value={VisualizationChoiceState.SavedSolutions}
-              >Tallennetut ratkaisut</RadioItem
+              >{#if Finnish}Tallennetut ratkaisut
+              {:else}Best candidate solutions{/if}</RadioItem
             >
             <RadioItem
               bind:group={visualizationChoiceState}
               name="justify"
               value={VisualizationChoiceState.AllSolutions}
-              >Kaikki ratkaisut</RadioItem
+              >{#if Finnish}Kaikki ratkaisut
+              {:else}All solutions{/if}</RadioItem
             >
           </RadioGroup>
 
           {#if visualizationChoiceState === VisualizationChoiceState.CurrentSolutions}
             <div>
-              Näytä NIMBUS-menetelmän ratkaisut viimeisimmältä laskentakerralta.
+              {#if Finnish}Näytä NIMBUS-menetelmän ratkaisut viimeisimmältä
+                laskentakerralta.
+              {:else}Visualize solutions generated by NIMBUS in the latest
+                iteration.{/if}
             </div>
           {:else if visualizationChoiceState === VisualizationChoiceState.SavedSolutions && problemInfo.saved_solutions.length}
-            <div>Näytä tallentamasi ratkaisut.</div>
+            <div>
+              {#if Finnish}Näytä tallentamasi ratkaisut.
+              {:else}Visualize best candidate solutions saved by you.{/if}
+            </div>
           {:else if visualizationChoiceState === VisualizationChoiceState.SavedSolutions}
             <div>
-              Ei tallennettuja ratkaisuita. Näytetään tämänhetkiset ratkaisut.
-              Voit tallentaa ratkaisuita vasemmalta löytyvästä Tallenna
-              ratkaisuita -osiosta.
+              {#if Finnish}Ei tallennettuja ratkaisuita. Näytetään tämänhetkiset
+                ratkaisut. Voit tallentaa ratkaisuita vasemmalta löytyvästä
+                Tallenna ratkaisuita -osiosta.
+              {:else}No saved solutions. Showing solutions from the latest
+                iterations instead.{/if}
             </div>
           {:else if visualizationChoiceState === VisualizationChoiceState.AllSolutions}
-            <div>Näytä kaikki NIMBUS-menetelmän tuottamat ratkaisut.</div>
+            <div>
+              {#if Finnish}Näytä kaikki NIMBUS-menetelmän tuottamat ratkaisut.
+              {:else}Visualize all solutions generated by NIMBUS.{/if}
+            </div>
           {/if}
         </Card>
       </div>
@@ -932,7 +972,8 @@ A user interface for the NIMBUS method.
         {#if state === State.ClassifySelected && !finalChoiceState}
           <Card>
             <svelte:fragment slot="header"
-              >Ratkaisujen tarkastelu</svelte:fragment
+              >{#if Finnish}Ratkaisujen tarkastelu
+              {:else}Solution explorer{/if}</svelte:fragment
             >
 
             {#if problemInfo !== undefined && solutions_to_visualize !== undefined}
@@ -948,6 +989,7 @@ A user interface for the NIMBUS method.
                 bind:selected={selected_solutions}
                 bind:tab={visualizations_tab}
                 max_selections={1}
+                {Finnish}
               />
             {:else}
               <GeneralError />
@@ -955,7 +997,9 @@ A user interface for the NIMBUS method.
           </Card>
         {:else if finalChoiceState}
           <Card>
-            <svelte:fragment slot="header">Ratkaisun tarkastelu</svelte:fragment
+            <svelte:fragment slot="header"
+              >{#if Finnish}Ratkaisun tarkastelu
+              {:else}Solution Explorer{/if}</svelte:fragment
             >
 
             {#if problemInfo !== undefined && reference_solution !== undefined}
@@ -978,18 +1022,26 @@ A user interface for the NIMBUS method.
       </div>
       <div slot="solutions">
         <Card>
-          <svelte:fragment slot="header">Ratkaisut taulukossa</svelte:fragment>
+          <svelte:fragment slot="header"
+            >{#if Finnish}Ratkaisut taulukossa
+            {:else}Solutions{/if}</svelte:fragment
+          >
           <div class="flex flex-col gap-4">
             <p>
-              Tavoitteiden arvot taulukossa. Klikkaa riviä valitaksesi
-              tarkasteltava suunnitelma.
+              {#if Finnish}Tavoitteiden arvot taulukossa. Klikkaa riviä
+                valitaksesi tarkasteltava suunnitelma.
+              {:else}Objective values of solutions generated by NIMBUS. Click on
+                a row to select a solution.{/if}
             </p>
             <p>
-              Nettonykyarvon ja hakkuiden tuoton laskennassa on käytetty 3%
-              diskonntauskerrointa. Puuston tilavuus kuvaa tilannetta
-              suunnittelujakson lopussa. {#if compensation}Sidotusta hiilestä
-                maksettu korvaus on lisätty hakkuiden tuottoihin ja
-                nettonykyarvoon.{/if}
+              {#if Finnish}Nettonykyarvon ja hakkuiden tuoton laskennassa on
+                käytetty 3% diskonntauskerrointa. Puuston tilavuus kuvaa
+                tilannetta suunnittelujakson lopussa. {#if compensation}Sidotusta
+                  hiilestä maksettu korvaus on lisätty hakkuiden tuottoihin ja
+                  nettonykyarvoon.{/if}
+              {:else}A 3% discount rate has been used in the calculation of net
+                present value and logging revenue. The final timber volume
+                reflects the situation at the end of the planning period.{/if}
             </p>
             <div class="overflow-x-auto">
               {#if problemInfo !== undefined && solutions_to_visualize !== undefined}
@@ -1019,7 +1071,8 @@ A user interface for the NIMBUS method.
       <div slot="Map">
         <Card>
           <svelte:fragment slot="header"
-            >Metsänhoitosuunnitelma kartalla</svelte:fragment
+            >{#if Finnish}Metsänhoitosuunnitelma kartalla
+            {:else}Treatment options visualized on a map{/if}</svelte:fragment
           >
           {#if mapOptions[periodChoice] !== undefined && geoJSON !== undefined}
             <div style="white-space: pre-wrap;">{mapDescription}</div>
